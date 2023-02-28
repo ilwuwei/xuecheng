@@ -10,6 +10,8 @@
     <packaging>pom</packaging>
     <modules>
         <module>xuecheng-plus-base</module>
+        <module>xuecheng-plus-content</module>
+        <module>xuecheng-plus-generator</module>
     </modules>
 
     <properties>
@@ -38,7 +40,6 @@
 
     <dependencyManagement>
         <dependencies>
-
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
@@ -101,7 +102,6 @@
                 <artifactId>druid-spring-boot-starter</artifactId>
                 <version>${druid-spring-boot-starter.version}</version>
             </dependency>
-
             <!-- mySQL数据库驱动包管理 -->
             <dependency>
                 <groupId>mysql</groupId>
@@ -114,14 +114,12 @@
                 <artifactId>mybatis-plus-boot-starter</artifactId>
                 <version>${mybatis-plus-boot-starter.version}</version>
             </dependency>
-
             <!-- mybatis plus 代码生成器 -->
             <dependency>
                 <groupId>com.baomidou</groupId>
                 <artifactId>mybatis-plus-generator</artifactId>
                 <version>${mybatis-plus-boot-starter.version}</version>
             </dependency>
-
             <!-- 工具类管理 -->
             <dependency>
                 <groupId>commons-lang</groupId>
@@ -179,7 +177,6 @@
                 <artifactId>elasticsearch-rest-high-level-client</artifactId>
                 <version>${elasticsearch.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.elasticsearch</groupId>
                 <artifactId>elasticsearch</artifactId>
