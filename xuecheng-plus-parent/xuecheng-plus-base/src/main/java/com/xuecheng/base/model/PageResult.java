@@ -2,8 +2,7 @@ package com.xuecheng.base.model;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Data;
-import lombok.ToString;
+import lombok.*;
 
 import java.io.Serializable;
 import java.util.List;
@@ -13,9 +12,19 @@ import java.util.List;
  * @description 分页查询结果模型类
  */
 @Data
-@ToString
 @ApiModel("分页查询结果模型")
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class PageResult<T> implements Serializable {
+
+    //当前页码
+    @ApiModelProperty("当前页码")
+    private long currentPage;
+
+    //每页记录数
+    @ApiModelProperty("每页记录数")
+    private long pageSize;
 
     // 数据列表
     @ApiModelProperty("数据列表")
@@ -23,22 +32,10 @@ public class PageResult<T> implements Serializable {
 
     //总记录数
     @ApiModelProperty("总记录数")
-    private long counts;
-
-    //当前页码
-    @ApiModelProperty("当前页码")
-    private long page;
+    private long total;
 
     //每页记录数
-    @ApiModelProperty("每页记录数")
-    private long pageSize;
-
-    public PageResult(List<T> items, long counts, long page, long pageSize) {
-        this.items = items;
-        this.counts = counts;
-        this.page = page;
-        this.pageSize = pageSize;
-    }
-
+    @ApiModelProperty("总页数")
+    private long pageNum;
 
 }
