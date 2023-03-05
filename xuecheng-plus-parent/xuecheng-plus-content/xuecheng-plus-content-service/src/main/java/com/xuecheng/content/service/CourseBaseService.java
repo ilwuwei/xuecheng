@@ -3,6 +3,8 @@ package com.xuecheng.content.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.xuecheng.base.model.PageParams;
 import com.xuecheng.base.model.PageResult;
+import com.xuecheng.content.model.dto.AddCourseDto;
+import com.xuecheng.content.model.dto.CourseBaseInfoDto;
 import com.xuecheng.content.model.dto.QueryCourseParamsDto;
 import com.xuecheng.content.model.po.CourseBase;
 
@@ -23,5 +25,14 @@ public interface CourseBaseService extends IService<CourseBase> {
      * @description 课程查询接口
      */
     PageResult<CourseBase> queryCourseBaseList(PageParams pageParams, QueryCourseParamsDto queryCourseParamsDto);
+
+
+    /**
+     * 新增课程信息
+     * @param companyId  教学机构id
+     * @param addCourseDto  课程基本信息
+     * @return
+     */
+    CourseBaseInfoDto createCourseBase(Long companyId, AddCourseDto addCourseDto);
 
 }
