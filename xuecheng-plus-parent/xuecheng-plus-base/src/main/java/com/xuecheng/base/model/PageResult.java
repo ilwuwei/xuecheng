@@ -1,5 +1,6 @@
 package com.xuecheng.base.model;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
@@ -15,7 +16,6 @@ import java.util.List;
 @ApiModel("分页查询结果模型")
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 public class PageResult<T> implements Serializable {
 
     //当前页码
@@ -37,5 +37,21 @@ public class PageResult<T> implements Serializable {
     //每页记录数
     @ApiModelProperty("总页数")
     private long pageNum;
+
+    /**
+     * 根据mybatis分页对象 构造分页结果返回
+     *
+     * @param page
+     * @param <T>
+     * @return
+     */
+    public static <T> PageResult<T> handlerIPage(IPage<T> page) {
+        PageResult<T> pageResult = new PageResult<>();
+        pageResult.setCurrentPage(page.getCurrent());
+        pageResult.setItems(page.getRecords());
+        pageResult.setPageNum(page.getPages());
+        pageResult.setTotal(page.getTotal());
+        return pageResult;
+    }
 
 }

@@ -23,23 +23,13 @@ public class DictionaryServiceImpl extends ServiceImpl<DictionaryMapper, Diction
 
     @Override
     public List<Dictionary> queryAll() {
-
-        List<Dictionary> list = this.list();
-
-
-        return list;
+        return this.list();
     }
 
     @Override
     public Dictionary getByCode(String code) {
-
-
         LambdaQueryWrapper<Dictionary> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Dictionary::getCode, code);
-
-        Dictionary dictionary = this.getOne(queryWrapper);
-
-
-        return dictionary;
+        return this.getOne(queryWrapper);
     }
 }
