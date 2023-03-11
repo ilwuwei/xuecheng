@@ -4,7 +4,7 @@ module.exports = {
   devServer: {
     port: process.env.VUE_APP_CLIENT_MANAGE_PORT,
     open: false,
-	disableHostCheck: true,
+    disableHostCheck: true,
     // overlay: {
     // 	warnings: false,
     // 	errors: true,

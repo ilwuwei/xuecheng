@@ -92,7 +92,7 @@ export const createAPI = (
   return service(config)
 }
 
-export const createFormAPI = (url: string, method: Method, data: any) => {
+export const createFormAPI = (url: string, method: Method, data: any, contentType) => {
   let config: AxiosRequestConfig = {}
   config.url = url
   config.method = method
