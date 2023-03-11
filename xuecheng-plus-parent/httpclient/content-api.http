@@ -21,3 +21,8 @@ Content-Type: application/json
   "description": "",
   "objectives": ""
 }
+
+
+### 根据课程id查询课程信息
+GET {{content_host}}/content/course/40
+Content-Type: application/json

@@ -13,4 +13,12 @@ import com.xuecheng.content.model.po.CourseMarket;
  */
 public interface CourseMarketService extends IService<CourseMarket> {
 
+
+    /**
+     * 添加课程营销信息
+     * @param courseMarket
+     * @return
+     */
+    boolean saveCourseMarket(CourseMarket courseMarket);
+
 }
