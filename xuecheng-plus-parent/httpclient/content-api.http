@@ -1,5 +1,5 @@
 ###
-POST {{content_host}}/content/course
+POST {{gateway_host}}/content/course
 Content-Type: application/json
 
 {
@@ -24,5 +24,5 @@ Content-Type: application/json
 
 
 ### 根据课程id查询课程信息
-GET {{content_host}}/content/course/40
+GET {{gateway_host}}/content/course/40
 Content-Type: application/json
