@@ -1,0 +1,88 @@
+version: "3.8"
+
+services:
+  mysql:
+    image: mysql
+    container_name: mysql
+    ports:
+      - "3306:3306"
+    volumes:
+      - /opt/data/mysql/conf:/etc/mysql/conf.d
+      - /opt/data/mysql/data:/var/lib/mysql
+      - /opt/data/mysql/logs:/var/log/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      TZ: Asia/Shanghai
+      LANG: en_US.UTF-8
+    networks:
+      - xc-network
+    privileged: true
+    restart: always
+  nacos:
+    image: nacos/nacos-server:v2.2.0
+    container_name: nacos
+    ports:
+      - "8848:8848"
+    volumes:
+      - /opt/data/nacos/logs:/home/nacos/logs
+    environment: # 设置环境变量,相当于docker run命令中的-e
+      - PREFER_HOST_MODE=hostname                 # 如果支持主机名可以使用hostname,否则使用ip，默认也是ip
+      - MODE=standalone                           # 单机模式启动
+      - SPRING_DATASOURCE_PLATFORM=mysql          # 数据源平台 仅支持mysql或不保存empty
+      # 修改mysql连接信息
+      - MYSQL_SERVICE_HOST=43.138.11.63           # 注：这里不能为`127.0.0.1`或`localhost`方式！！！
+      - MYSQL_SERVICE_USER=root
+      - MYSQL_SERVICE_PASSWORD=root
+      - MYSQL_SERVICE_PORT=3306
+      - MYSQL_SERVICE_DB_NAME=nacos        # 数据库名 需提前创建数据库以及表 所需sql脚本位于 `nacos/conf/mysql-schema.sql`
+      - MYSQL_SERVICE_DB_PARAM=allowPublicKeyRetrieval=true&characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useSSL=false&serverTimezone=UTC
+      # 修改JVM调优参数
+      - JVM_XMS=128m   #-Xms default :2g
+      - JVM_XMX=128m   #-Xmx default :2g
+      - JVM_XMN=64m    #-Xmn default :1g
+      - JVM_MS=32m     #-XX:MetaspaceSize default :128m
+      - JVM_MMS=32m    #-XX:MaxMetaspaceSize default :320m
+    depends_on:
+      - mysql
+    networks:
+      - xc-network
+    privileged: true
+    restart: always
+  redis:
+    image: redis
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - /opt/data/redis/redis.conf:/etc/redis/redis.conf
+      - /opt/data/redis/data:/data
+    command: redis-server /etc/redis/redis.conf --bind 0.0.0.0 --requirepass 123456 --appendonly yes
+    environment:
+      - TZ=Asia/Shanghai
+    networks:
+      - xc-network
+    privileged: true
+    restart: always
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - /opt/data/mongo/db:/data/db
+      - /opt/data/mongo/logs:/data/logs
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+      MONGO_DATA_DIR: /data/db
+      MONGO_LOG_DIR: /data/logs
+    command: mongod --auth
+    networks:
+      - xc-network
+    privileged: true
+    restart: always
+
+networks:
+  xc-network:
+    driver: bridge
+
