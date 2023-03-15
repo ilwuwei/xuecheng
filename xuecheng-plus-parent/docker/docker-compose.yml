@@ -10,14 +10,22 @@ services:
       - /opt/data/mysql/conf:/etc/mysql/conf.d
       - /opt/data/mysql/data:/var/lib/mysql
       - /opt/data/mysql/logs:/var/log/mysql
+      # 数据库初始化脚本，当Mysql容器首次启动时，会在 /docker-entrypoint-initdb.d目录下
+      # 扫描 .sh，.sql，.sql.gz类型的文件。如果这些类型的文件存在，将执行它们来初始化一个数据库；
+      # $DATADIR/mysql 但凡该服务器已经存在任何数据库，那么这个文件肯定不为空，故而不会执行sql脚本；
+      - /opt/data/mysql/init:/docker-entrypoint-initdb.d/
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      TZ: Asia/Shanghai
-      LANG: en_US.UTF-8
+      - MYSQL_ROOT_PASSWORD=root  # root用户密码
+      - TZ=Asia/Shanghai
+      - LANG=en_US.UTF-8
     networks:
       - xc-network
     privileged: true
     restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
   nacos:
     image: nacos/nacos-server:v2.2.0
     container_name: nacos
@@ -36,7 +44,7 @@ services:
       - MYSQL_SERVICE_USER=root
       - MYSQL_SERVICE_PASSWORD=root
       - MYSQL_SERVICE_PORT=3306
-      - MYSQL_SERVICE_DB_NAME=nacos        # 数据库名 需提前创建数据库以及表 所需sql脚本位于 `nacos/conf/mysql-schema.sql`
+      - MYSQL_SERVICE_DB_NAME=nacos        # 数据库名 需提前创建数据库以及表 所需sql脚本位于 `nacos/conf/nacos-mysql.sql`
       - MYSQL_SERVICE_DB_PARAM=allowPublicKeyRetrieval=true&characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useSSL=false&serverTimezone=UTC
       # 修改JVM调优参数
       - JVM_XMS=128m   #-Xms default :2g
@@ -50,6 +58,10 @@ services:
       - xc-network
     privileged: true
     restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
   redis:
     image: redis
     container_name: redis
@@ -58,13 +70,17 @@ services:
     volumes:
       - /opt/data/redis/redis.conf:/etc/redis/redis.conf
       - /opt/data/redis/data:/data
-    command: redis-server /etc/redis/redis.conf --bind 0.0.0.0 --requirepass 123456 --appendonly yes
+    command: redis-server /etc/redis/redis.conf --bind 0.0.0.0 --requirepass 123456 --appendonly yes # 设置访问密码，设置持久化存储
     environment:
       - TZ=Asia/Shanghai
     networks:
       - xc-network
     privileged: true
     restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
   mongodb:
     image: mongo
     container_name: mongodb
@@ -74,15 +90,47 @@ services:
       - /opt/data/mongo/db:/data/db
       - /opt/data/mongo/logs:/data/logs
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: admin
-      MONGO_DATA_DIR: /data/db
-      MONGO_LOG_DIR: /data/logs
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin
+      - MONGO_DATA_DIR=/data/db
+      - MONGO_LOG_DIR=/data/logs
     command: mongod --auth
     networks:
       - xc-network
     privileged: true
     restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    ports:
+      - "9000:9000" # 文件上传&预览端口
+      - "9001:9001" # 控制台访问端口
+    volumes:
+      # 重新创建容器时需要删除
+      - /opt/data/minio/data:/data
+      - /opt/data/minio/minio:/minio
+      - /opt/data/minio/config:/root/.minio
+    environment:
+      - TZ=Asia/Shanghai
+      - LANG=en_US.UTF-8
+      - MINIO_PROMETHEUS_AUTH_TYPE=public
+      - MINIO_ROOT_USER=admin                        # 登录账号
+      - MINIO_ROOT_PASSWORD=admin123                    # 登录密码
+    #      - MINIO_ACCESS_KEY=admin                        # 登录账号 （旧）
+    #      - MINIO_SECRET_KEY=admin123                    # 登录密码（旧）
+    command: server /data --console-address "0.0.0.0:9001"
+    restart: always
+    privileged: true
+    networks:
+      - xc-network
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
 
 networks:
   xc-network:
