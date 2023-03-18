@@ -1,9 +1,8 @@
 <template>
   <div>
     <el-upload
-      action
       list-type="picture-card"
-      accept=".jpg, .png, .bmp"
+      accept=".jpg, .png, .bmp .jpeg"
       :file-list="fileList"
       :before-upload="handleBeforeUpload"
       :on-success="handleUploadSuccess"
