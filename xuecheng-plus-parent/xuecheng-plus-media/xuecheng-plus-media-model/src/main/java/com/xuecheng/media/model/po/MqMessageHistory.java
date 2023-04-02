@@ -6,13 +6,8 @@ import lombok.Data;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-/**
- * <p>
- * 
- * </p>
- *
- * @author itcast
- */
+
+
 @Data
 @TableName("mq_message_history")
 public class MqMessageHistory implements Serializable {

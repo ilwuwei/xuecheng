@@ -1,28 +1,18 @@
 package com.xuecheng.media.controller;
 
-import com.xuecheng.base.exception.XueChengPlusException;
 import com.xuecheng.base.model.PageParams;
 import com.xuecheng.base.model.PageResult;
-import com.xuecheng.media.config.MinIoProperties;
 import com.xuecheng.media.model.dto.QueryMediaParamsDto;
 import com.xuecheng.media.model.dto.UploadFileParamsDto;
 import com.xuecheng.media.model.dto.UploadFileResultDto;
 import com.xuecheng.media.model.po.MediaFiles;
 import com.xuecheng.media.service.MediaFileService;
-import com.xuecheng.media.utils.MinIoUtils;
-import io.minio.MinioClient;
-import io.minio.PutObjectArgs;
-import io.minio.errors.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 
 /**
  * @author Mr.M
@@ -51,7 +41,7 @@ public class MediaFilesController {
     @ApiOperation("上传文件")
     @PostMapping(value = "/upload/coursefile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseBody
-    public UploadFileResultDto upload(@RequestPart("filedata") MultipartFile filedata) throws Exception {
+    public UploadFileResultDto upload(@RequestPart("filedata") MultipartFile filedata) {
         Long companyId = 1232141425L;
         UploadFileParamsDto uploadFileParamsDto = new UploadFileParamsDto();
         //文件大小
@@ -62,8 +52,7 @@ public class MediaFilesController {
         String filename = filedata.getOriginalFilename();
         uploadFileParamsDto.setFilename(filename);
         uploadFileParamsDto.setFileSize(filedata.getSize());
-        UploadFileResultDto uploadFileResultDto = mediaFileService.uploadFile(companyId, uploadFileParamsDto, filedata);
-        return uploadFileResultDto;
+        return mediaFileService.uploadFile(companyId, uploadFileParamsDto, filedata);
     }
 
 }

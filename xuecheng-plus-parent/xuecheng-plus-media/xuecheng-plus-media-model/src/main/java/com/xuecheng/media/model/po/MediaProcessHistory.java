@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
  * 
  * </p>
  *
- * @author itcast
  */
 @Data
 @TableName("media_process_history")

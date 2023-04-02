@@ -34,6 +34,9 @@ public class MediaFileServiceImpl implements MediaFileService {
     @Autowired
     MinIoUtils minioUtils;
 
+    @Autowired
+    MediaFileService currentProxy;
+
     //普通文件桶
     @Value("${minio.bucket.files}")
     private String BUCKET_FILES;
@@ -89,7 +92,7 @@ public class MediaFileServiceImpl implements MediaFileService {
         String fileMd5 = objectName.substring(objectName.lastIndexOf("/") + 1, objectName.lastIndexOf("."));
         // 保存文件信息到数据库
         UploadFileResultDto uploadFileResultDto = new UploadFileResultDto();
-        MediaFiles mediaFiles = this.addMediaFilesToDb(companyId, fileMd5, uploadFileParamsDto, BUCKET_FILES, objectName);
+        MediaFiles mediaFiles = currentProxy.addMediaFilesToDb(companyId, fileMd5, uploadFileParamsDto, BUCKET_FILES, objectName);
         BeanUtils.copyProperties(mediaFiles, uploadFileResultDto);
         return uploadFileResultDto;
     }
