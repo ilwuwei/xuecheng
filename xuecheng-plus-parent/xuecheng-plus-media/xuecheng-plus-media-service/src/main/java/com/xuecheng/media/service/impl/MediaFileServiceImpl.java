@@ -25,6 +25,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Slf4j
@@ -93,9 +96,8 @@ public class MediaFileServiceImpl implements MediaFileService {
     @Override
     public UploadFileResultDto uploadFile(Long companyId, UploadFileParamsDto uploadFileParamsDto, MultipartFile filedata) {
         try {
-            InputStream stream = filedata.getInputStream();
             String fileName = filedata.getOriginalFilename();
-            String fileMd5 = FileUtils.getFileMd5(stream);
+            String fileMd5 = FileUtils.getFileMd5(filedata.getInputStream());
             String extension = FileUtils.getFileExtension(fileName);
             String objectName = FileUtils.getDefaultFolderPath(fileMd5 + extension);
             // 上传文件到minio
@@ -138,18 +140,42 @@ public class MediaFileServiceImpl implements MediaFileService {
     }
 
     @Override
-    public void uploadFileChuck(InputStream stream, String fileMd5, int chunk) {
+    public RestResponse<Boolean> uploadFileChuck(InputStream stream, String fileMd5, int chunk) {
         // 获取分块文件上传路径
         String chunkFilePath = this.getChunkFileFolderPath(fileMd5) + chunk;
-        minioUtils.uploadObject("video", chunkFilePath, "application/octet-stream", stream);
+        minioUtils.uploadObject("video", chunkFilePath, null, stream);
+        return RestResponse.success();
     }
+
 
     @Override
     public RestResponse mergeChunks(Long companyId, String fileMd5, int chunkTotal, UploadFileParamsDto uploadFileParamsDto) {
-
-        return null;
+        //得到分块文件目录
+        String chunkFileFolderPath = this.getChunkFileFolderPath(fileMd5);
+        //得到分块文件的路径
+        List<String> chunkFileList = Stream.iterate(0, i -> ++i)
+                .limit(chunkTotal)
+                .map(i -> chunkFileFolderPath + i)
+                .collect(Collectors.toList());
+        // 合并后的文件名
+        String filename = uploadFileParamsDto.getFilename();
+        String extension = FileUtils.getFileExtension(filename);
+        // 合并文件的路径
+        String objectPath = this.getFilePathByMd5(fileMd5, extension);
+        // 合并文件
+        minioUtils.mergerObject(VIDEO_FILES, chunkFileList, objectPath);
+        // ====验证md5====
+        InputStream stream = minioUtils.getObjectStream(VIDEO_FILES, objectPath);
+        String md5 = FileUtils.getFileMd5(stream);
+        if (!fileMd5.equals(md5)) {
+            XueChengPlusException.cast("文件上传失败");
+        }
+        // 清除分块文件
+        minioUtils.removeBatchObject(VIDEO_FILES, chunkFileList);
+        // 文件信息入库
+        currentProxy.addMediaFilesToDb(companyId, fileMd5, uploadFileParamsDto, VIDEO_FILES, objectPath);
+        return RestResponse.success(true);
     }
-
 
     /**
      * 得到分块文件的目录
@@ -159,6 +185,17 @@ public class MediaFileServiceImpl implements MediaFileService {
      */
     private String getChunkFileFolderPath(String fileMd5) {
         return fileMd5.substring(0, 1) + "/" + fileMd5.substring(1, 2) + "/" + fileMd5 + "/" + "chunk" + "/";
+    }
+
+    /**
+     * 得到合并后的文件的地址
+     *
+     * @param fileMd5 文件id即md5值
+     * @param fileExt 文件扩展名
+     * @return
+     */
+    private String getFilePathByMd5(String fileMd5, String fileExt) {
+        return fileMd5.substring(0, 1) + "/" + fileMd5.substring(1, 2) + "/" + fileMd5 + "/" + fileMd5 + fileExt;
     }
 
 

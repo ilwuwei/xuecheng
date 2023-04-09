@@ -47,14 +47,14 @@ public interface MediaFileService {
     UploadFileResultDto uploadFile(Long companyId, UploadFileParamsDto uploadFileParamsDto, MultipartFile filedate);
 
 
-    void uploadFileChuck(InputStream stream, String fileMd5, int chunk);
+    RestResponse<Boolean> uploadFileChuck(InputStream stream, String fileMd5, int chunk);
 
     /**
      * @description 检查文件是否存在
      * @param fileMd5 文件的md5
      * @return com.xuecheng.base.model.RestResponse<java.lang.Boolean> false不存在，true存在
      */
-    public RestResponse<Boolean> checkFile(String fileMd5);
+    RestResponse<Boolean> checkFile(String fileMd5);
 
     /**
      * @description 检查分块是否存在
@@ -62,7 +62,7 @@ public interface MediaFileService {
      * @param chunkIndex  分块序号
      * @return com.xuecheng.base.model.RestResponse<java.lang.Boolean> false不存在，true存在
      */
-    public RestResponse<Boolean> checkChunk(String fileMd5, int chunkIndex);
+    RestResponse<Boolean> checkChunk(String fileMd5, int chunkIndex);
 
 
 
@@ -74,7 +74,7 @@ public interface MediaFileService {
      * @param uploadFileParamsDto 文件信息
      * @return com.xuecheng.base.model.RestResponse
      */
-    public RestResponse mergeChunks(Long companyId,String fileMd5,int chunkTotal,UploadFileParamsDto uploadFileParamsDto);
+    RestResponse mergeChunks(Long companyId,String fileMd5,int chunkTotal,UploadFileParamsDto uploadFileParamsDto);
 
 
 }

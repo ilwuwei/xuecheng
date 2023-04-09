@@ -2,15 +2,17 @@ package com.xuecheng.media.utils;
 
 import com.xuecheng.base.exception.XueChengPlusException;
 import com.xuecheng.media.config.MinIoProperties;
-import io.minio.MinioClient;
-import io.minio.PutObjectArgs;
-import io.minio.StatObjectArgs;
+import io.minio.*;
+import io.minio.messages.DeleteError;
+import io.minio.messages.DeleteObject;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.io.InputStream;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -39,8 +41,6 @@ public class MinIoUtils {
     }
 
 
-
-
     /**
      * 通过文件流上传文件到minio
      *
@@ -66,6 +66,88 @@ public class MinIoUtils {
             e.printStackTrace();
             throw new XueChengPlusException("文件上传失败");
         }
+    }
+
+
+    /**
+     * 从minio下载文件
+     *
+     * @param bucket
+     * @param objectPath
+     * @return
+     */
+    public InputStream getObjectStream(String bucket, String objectPath) {
+        try {
+            return minioClient.getObject(
+                    GetObjectArgs.builder()
+                            .bucket(bucket)
+                            .object(objectPath)
+                            .build()
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("文件下载失败, bucket: {}, objectName: {}", bucket, objectPath);
+            throw new XueChengPlusException("文件下载失败");
+        }
+    }
+
+
+    /**
+     * 合并文件
+     *
+     * @param bucket
+     * @param objectList
+     */
+    public void mergerObject(String bucket, List<String> objectList, String mergerFileName) {
+
+        List<ComposeSource> composeSourceList =
+                objectList.stream()
+                        .map(file -> ComposeSource.builder().bucket(bucket).object(file).build())
+                        .collect(Collectors.toList());
+        try {
+            minioClient.composeObject(
+                    ComposeObjectArgs
+                            .builder()
+                            .bucket(bucket)
+                            .object(mergerFileName)
+                            .sources(composeSourceList)
+                            .build()
+            );
+            log.info("文件合并成功");
+        } catch (Exception e) {
+            log.info("文件合并失败");
+            throw new XueChengPlusException("文件合并失败");
+        }
+    }
+
+
+    /**
+     * 批量删除文件
+     *
+     * @param bucket
+     * @param objectList
+     */
+    public void removeBatchObject(String bucket, List<String> objectList) {
+        List<DeleteObject> deleteObjects = objectList
+                .stream()
+                .map(file -> new DeleteObject(file))
+                .collect(Collectors.toList());
+
+        Iterable<Result<DeleteError>> results = minioClient.removeObjects(
+                RemoveObjectsArgs
+                        .builder()
+                        .bucket(bucket)
+                        .objects(deleteObjects)
+                        .build()
+        );
+        results.forEach(r -> {
+            try {
+                r.get();
+            } catch (Exception e) {
+                throw new XueChengPlusException("文件删除失败");
+            }
+        });
+        log.info("文件删除成功, 删除文件数量: {}", objectList.size());
     }
 
 

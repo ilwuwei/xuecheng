@@ -36,8 +36,7 @@ public class FileUtils {
      */
     public static String getFileMd5(InputStream inputStream) {
         try {
-            String fileMd5 = DigestUtils.md5Hex(inputStream);
-            return fileMd5;
+            return DigestUtils.md5Hex(inputStream);
         } catch (IOException e) {
             e.printStackTrace();
             return null;
